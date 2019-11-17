@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:sns="http://www.mulesoft.org/schema/mule/sns" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:s3="http://www.mulesoft.org/schema/mule/s3"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/s3 http://www.mulesoft.org/schema/mule/s3/current/mule-s3.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/sns http://www.mulesoft.org/schema/mule/sns/current/mule-sns.xsd">
+	<s3:config name="Amazon_S3_Configuration" doc:name="Amazon S3 Configuration" doc:id="706581dc-8316-49c8-a3db-196c6fca6e75" >
+		<s3:basic-connection accessKey=" AKIAJWKZDPLHRO4WPP7A" secretKey="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" />
+	</s3:config>
+	<http:listener-config name="HTTP_Listener_config1" doc:name="HTTP Listener config" doc:id="133de9f1-25ed-4efe-adc7-9135519f7ac0" >
+		<http:listener-connection host="0.0.0.0" port="8091" />
+	</http:listener-config>
+	<sns:config name="Amazon_SNS_configuration" doc:name="Amazon SNS configuration" doc:id="3f0355c6-8b89-4ca8-984f-053a12cd5e93" >
+		<sns:basic-connection accessKey="AKIAJWKZDPLHRO4WPP7A" secretKey="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" />
+	</sns:config>
+	<flow name="aws-test3Flow" doc:id="61b24e26-1e75-4193-9268-6eca7bbb9664" initialState="stopped">
+		<http:listener doc:name="Listener" doc:id="45e76d60-c2da-446a-974b-e063353bf14e" path="/createbucket" config-ref="HTTP_Listener_config1"/>
+		<logger level="INFO" doc:name="Logger" doc:id="f1a44277-eb5f-44bb-9d4e-f5f3eb9cd521" />
+		<s3:create-bucket doc:name="Create bucket" doc:id="3df527b7-d232-4925-b7b3-2ef4da286185" config-ref="Amazon_S3_Configuration" bucketName="swapna" region="US_EAST_2"/>
+		<set-payload value="mule bucket created on S3" doc:name="Set Payload" doc:id="3f86bec1-4eb0-454a-8185-bebf4b7d3c22" />
+	</flow>
+	<flow name="awss3bucket_creationobject_Flow" doc:id="46da1137-4674-47aa-817b-9dd399aeca7f" initialState="stopped">
+		<http:listener doc:name="Listener" doc:id="01bcafc5-51d2-44f3-9cb4-657b8796ca0e" config-ref="HTTP_Listener_config1" path="/createbucket" allowedMethods="POST"/>
+		<s3:create-object doc:name="Create object" doc:id="945880ab-a44e-43b1-a28a-cb5daeadf672" config-ref="Amazon_S3_Configuration" bucketName="bucketdemoswapna" key="sample_text_file"/>
+		<set-payload value="file created" doc:name="Set Payload" doc:id="0f6e8f2d-62f9-4c81-8a9c-7e7a6f6bc9df" />
+	</flow>
+	<flow name="awss3bucket_topic_creation" doc:id="c50dab5d-129a-4f52-9929-ed6bd5a285a1" initialState="started">
+		<http:listener doc:name="Listener" doc:id="f41fede6-fb47-4863-bdae-20137d8c2513" config-ref="HTTP_Listener_config1" path="/createtopic"/>
+		<logger level="INFO" doc:name="Logger" doc:id="acfb2300-2c7d-411b-b124-5a26a1726559" />
+		<sns:create-topic doc:name="Creationtopic" doc:id="d1c7e2ed-c8d7-465a-a8cd-aacac3921129" config-ref="Amazon_SNS_configuration" topicName="swapnanewtopic"/>
+		<set-payload value='#["topicname": "swapnanewtopic"]' doc:name="Set Payload" doc:id="1074204e-ff63-4e89-9502-728c4005efa7" />
+	</flow>
+	<flow name="awss3bucket_applicationFlow" doc:id="a3589bad-1642-4c57-977e-b4ff7cb1f1b1" initialState="stopped">
+		<http:listener doc:name="Listener" doc:id="e0af6f06-2b75-40e1-874a-5d13c885dfd8" config-ref="HTTP_Listener_config1" path="/notify" allowedMethods="GET"/>
+		<sns:publish doc:name="Publish" doc:id="d42db5c2-c115-4c44-b957-44fc674b6440" config-ref="Amazon_SNS_configuration" topicArn="arn:aws:sns:us-east-2:211556697089:new_sns_chetan_us" subject="payload.subject" messageStructure="output application/json --- payload.arn" targetArn='#["hello world"]'>
+			<sns:message ><![CDATA[#["hello world"]]]></sns:message>
+		</sns:publish>
+		<logger level="INFO" doc:name="Logger" doc:id="5e37fe6a-e8c8-45b5-8b4f-60b505c42b87" message="Message: #[payload]"/>
+	</flow>
+
+</mule>
