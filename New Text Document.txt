@@ -1,0 +1,12 @@
+2:08:30.234     11/17/2019     Deployment     system     SYSTEM
+Deploying application to 1 workers in us-east-2 region(s).
+12:08:30.679     11/17/2019     Deployment     system     SYSTEM
+Provisioning CloudHub worker in region=us-east-2...
+12:08:31.232     11/17/2019     Deployment     system     SYSTEM
+Starting CloudHub worker at 52.15.75.3 ...
+12:08:47.081     11/17/2019     Deployment     system     SYSTEM
+Worker(52.15.75.3): Starting your application on mule=4.2.1...
+12:09:07.090     11/17/2019     Deployment     system     SYSTEM
+Worker(52.15.75.3): Your application has started successfully.
+12:09:08.028     11/17/2019     Deployment     system     SYSTEM
+Your application is started.
